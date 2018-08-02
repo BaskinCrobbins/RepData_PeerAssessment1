@@ -5,16 +5,15 @@ output:
     keep_md: yes
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+
 
 ## Loading and preprocessing the data
 
 Show any code that is needed to:
 
 1. Load the data (i.e. read.csv())
-```{r foot1_1}
+
+```r
 setwd("C:/Users/Colin/Documents/R/Quant/Coursera/Reproducible Research/Week 2")
 
 fileUrl <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
@@ -29,22 +28,38 @@ footRaw <- read.csv("activity.csv", header = TRUE)
 For this part of the assignment, you can ignore the missing values in the dataset.
 
 1. Calculate the total number of steps taken per day
-``` {r foot1_2}
+
+```r
 sumSteps <- tapply(footRaw$steps, footRaw$date, sum, na.rm = TRUE)
 ```
 
 2. If you do not understand the difference between a histogram and a barplot, research the difference between them. Make a histogram of the total number of steps taken each day
 
-``` {r foot1_3}
+
+```r
 library(ggplot2)
 ggplot() + aes(sumSteps) + geom_histogram(binwidth = 2000) + labs(title = "Sum of Steps by Day", x = "Total Steps", y = "frequency")
 ```
 
+![](PA1_template_files/figure-html/foot1_3-1.png)<!-- -->
+
 3. Calculate and report the mean and median of the total number of steps taken per day
 
-``` {r foot1_4}
+
+```r
 mean(sumSteps)
+```
+
+```
+## [1] 9354.23
+```
+
+```r
 median(sumSteps)
+```
+
+```
+## [1] 10395
 ```
 
 
@@ -52,7 +67,8 @@ median(sumSteps)
 
 1. Make a time series plot (i.e. \color{red}{\verb|type = "l"|}type="l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
 
-```{r foot2_1}
+
+```r
 intSteps <- tapply(footRaw$steps, footRaw$interval, sum, na.rm = TRUE)
 avgInt <- intSteps / length(unique(footRaw$date))
 cntInt <- footRaw[1:288,3]
@@ -60,10 +76,18 @@ timeInt <- as.data.frame(cbind(cntInt, avgInt))
 ggplot(timeInt, aes(cntInt, avgInt)) + geom_line() + labs(title = "Average Steps by Interval", x = "Interval", y = "Average Steps Taken")
 ```
 
+![](PA1_template_files/figure-html/foot2_1-1.png)<!-- -->
+
 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
-```{r foot2_2}
+
+```r
 timeInt[timeInt[,2] == max(timeInt$avgInt),]
+```
+
+```
+##     cntInt   avgInt
+## 835    835 179.1311
 ```
 
 ## Imputing Missing Values
@@ -72,16 +96,22 @@ Note that there are a number of days/intervals where there are missing values (c
 
 1. Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
 
-```{r foot3_1}
+
+```r
 footRaw2 <- footRaw
 sum(is.na(footRaw2[,1]))
+```
+
+```
+## [1] 2304
 ```
 
 2. Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
 
 3. Create a new dataset that is equal to the original dataset but with the missing data filled in.
 
-```{r foot3_2_3}
+
+```r
 for(i in 1:length(footRaw2[,1])) {
         if (is.na(footRaw2[i,1]) == TRUE) {
                 dt <- footRaw2[i,3]
@@ -89,19 +119,33 @@ for(i in 1:length(footRaw2[,1])) {
         }
         
 }
-
 ```
 
 4. Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
-```{r foot3_4}
+
+```r
 sumSteps2 <- tapply(footRaw2$steps, footRaw$date, sum, na.rm = TRUE)
 library(ggplot2)
 ggplot() + aes(sumSteps2) + geom_histogram(binwidth = 2000) + labs(title = "Sum of Steps by Day", x = "Total Steps", y = "frequency")
+```
 
+![](PA1_template_files/figure-html/foot3_4-1.png)<!-- -->
 
+```r
 mean(sumSteps2)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 median(sumSteps2)
+```
+
+```
+## [1] 10766.19
 ```
 Replacing the NA values with the mean of the 5-minute interval normalizes the data and even creates the situation where the mean is equivalent to the median.
 
@@ -111,7 +155,8 @@ For this part the weekdays function may be of some help here. Use the dataset wi
 
 1. Create a new factor variable in the dataset with two levels - "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
 
-``` {r foot4_1}
+
+```r
 footRaw3 <- footRaw2
 footRaw3$date <- as.Date(footRaw3$date)
 weekdays1 <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
@@ -121,7 +166,8 @@ footRaw3$wday <- factor((weekdays(footRaw3$date) %in% weekdays1),
 
 2. Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
 
-``` {r foot4_2}
+
+```r
 footWeek <- footRaw3[footRaw3[,4] == "weekday",]
 footEnd <- footRaw3[footRaw3[,4] == "weekend",]
 meanWeek <- tapply(footWeek$steps, footWeek$interval, mean)
@@ -132,3 +178,5 @@ par(mfrow = c(2,1))
 plot(weekPlot$cntInt, weekPlot$meanWeek, type = "l", xlab = "Interval", ylab = "Average Steps", main = "Average Steps by Weekday")
 plot(weekPlot$cntInt, weekPlot$meanEnd, type = "l", xlab = "Interval", ylab = "Average Steps", main = "Average Steps by Weekend")
 ```
+
+![](PA1_template_files/figure-html/foot4_2-1.png)<!-- -->
